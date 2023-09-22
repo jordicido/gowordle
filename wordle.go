@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -22,7 +23,7 @@ func main() {
 		case 1:
 			playGame()
 		case 2:
-			fmt.Println("Instructions")
+			instructions()
 		case 3:
 			fmt.Println("Bye bye!")
 		default:
@@ -34,6 +35,18 @@ func main() {
 
 	}
 
+}
+
+func checkCorrectInput(word string) error {
+	if len(word) != 5 {
+		return errors.New("word must have 5 characters")
+	}
+	for _, letter := range word {
+		if rune(letter) <= 97 || rune(letter) >= 122 {
+			return errors.New("word must only have letters")
+		}
+	}
+	return nil
 }
 
 func compareWords(guess, word string) []int {
@@ -64,37 +77,45 @@ func playGame() {
 		fmt.Println("Guess the word:")
 		scanner.Scan()
 		guess := scanner.Text()
-		//TODO check if the word introduced is correct, must have:
-		//	* 5 chars
-		// 	* only characters
-		compareResult := compareWords(guess, wordToGuess)
+		err := checkCorrectInput(strings.ToLower(guess))
+		if err == nil {
+			compareResult := compareWords(guess, wordToGuess)
 
-		yellow := color.New(color.FgYellow)
-		green := color.New(color.FgGreen)
-		correct := true
+			yellow := color.New(color.FgYellow)
+			green := color.New(color.FgGreen)
+			correct := true
 
-		for j := 0; j < 5; j++ {
-			switch compareResult[j] {
-			case 1:
-				correct = false
-				yellow.Print(string(guess[j]))
-			case 2:
-				green.Print(string(guess[j]))
-			default:
-				correct = false
-				fmt.Print(string(guess[j]))
+			for j := 0; j < 5; j++ {
+				switch compareResult[j] {
+				case 1:
+					correct = false
+					yellow.Print(string(guess[j]))
+				case 2:
+					green.Print(string(guess[j]))
+				default:
+					correct = false
+					fmt.Print(string(guess[j]))
+				}
+				if j == 4 {
+					fmt.Println()
+				}
 			}
-			if j == 4 {
-				fmt.Println()
+			if correct {
+				fmt.Println("Congratulations, you won!")
+				break
+			} else if i == 0 {
+				fmt.Printf("You've lost, the word was %v\n", wordToGuess)
+			} else {
+				fmt.Printf("You have %v tries left\n", i)
 			}
-		}
-		if correct {
-			fmt.Println("Congratulations, you won!")
-			break
-		} else if i == 0 {
-			fmt.Printf("You've lost, the word was %v\n", wordToGuess)
 		} else {
-			fmt.Printf("You have %v tries left\n", i)
+			fmt.Println(err.Error())
+			i++
 		}
+
 	}
+}
+
+func instructions() {
+	fmt.Println("Wordle is a popular word puzzle game where the objective is to guess a hidden five-letter word within six attempts.")
 }
