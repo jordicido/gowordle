@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"strings"
 
@@ -11,7 +10,6 @@ import (
 )
 
 func main() {
-	loadWords()
 
 	for {
 		fmt.Printf("Welcome to my Go Wordle! \nWhat you want to do? \n 1- Play a game \n 2- Read instructions \n 3- Exit \n")
@@ -42,9 +40,13 @@ func checkCorrectInput(word string) error {
 		return errors.New("word must have 5 characters")
 	}
 	for _, letter := range word {
-		if rune(letter) <= 97 || rune(letter) >= 122 {
+		if rune(letter) < 97 || rune(letter) > 122 {
 			return errors.New("word must only have letters")
 		}
+	}
+	_, err := wordExists(word)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -72,8 +74,10 @@ func compareWords(guess, word string) []int {
 }
 
 func playGame() {
-	wordToGuess := wordList[rand.Intn(len(wordList))]
-	for i := 5; i >= 0; i-- {
+	wordToGuess, err := getWord()
+	check(err)
+	var tries = [6]string{"", "", "", "", "", ""}
+	for i := 0; i < 6; i++ {
 		fmt.Println("Guess the word:")
 		scanner.Scan()
 		guess := scanner.Text()
@@ -89,24 +93,29 @@ func playGame() {
 				switch compareResult[j] {
 				case 1:
 					correct = false
-					yellow.Print(string(guess[j]))
+					tries[i] += yellow.Sprint(string(guess[j]))
 				case 2:
-					green.Print(string(guess[j]))
+					tries[i] += green.Sprint(string(guess[j]))
 				default:
 					correct = false
-					fmt.Print(string(guess[j]))
-				}
-				if j == 4 {
-					fmt.Println()
+					tries[i] += fmt.Sprint(string(guess[j]))
 				}
 			}
 			if correct {
 				fmt.Println("Congratulations, you won!")
 				break
-			} else if i == 0 {
+			}
+			for k := 0; k < 6; k++ {
+				if len(tries[k]) > 0 {
+					fmt.Println(tries[k])
+				} else {
+					break
+				}
+			}
+			if i == 5 {
 				fmt.Printf("You've lost, the word was %v\n", wordToGuess)
 			} else {
-				fmt.Printf("You have %v tries left\n", i)
+				fmt.Printf("You have %v tries left\n", 5-i)
 			}
 		} else {
 			fmt.Println(err.Error())
