@@ -65,7 +65,7 @@ func compareWords(guess, word string) []int {
 	for i := 0; i < 5; i++ {
 		lettersInWord := strings.Count(word, string(guess[i]))
 		lettersInGuess := strings.Count(string(guess[0:i]), string(guess[i]))
-		if lettersInWord > 0 && lettersInGuess < lettersInWord {
+		if lettersInWord > 0 && lettersInGuess < lettersInWord && string(word[i]) != "*" {
 			result[i] = 1
 		} else if string(word[i]) != "*" {
 			result[i] = 0
@@ -140,5 +140,20 @@ func showMatchHistory() {
 	check(err)
 	for _, match := range matchHistory {
 		fmt.Printf("Partida: %d \n", match.id)
+		fmt.Println("-------------")
+		fmt.Printf("Word to guess: %s \n", match.wordToGuess)
+		var result string
+		if match.solved {
+			result = "Victory"
+		} else {
+			result = "Loss"
+		}
+		fmt.Printf("Result: %s \n", result)
+		fmt.Printf("Tries: %d \n", match.tries)
+		fmt.Println("Words tried:")
+		wordsTried := strings.Split(match.result, ",")
+		for _, word := range wordsTried {
+			fmt.Println(word)
+		}
 	}
 }
