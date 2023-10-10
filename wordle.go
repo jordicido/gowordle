@@ -12,7 +12,7 @@ import (
 func main() {
 
 	for {
-		fmt.Printf("Welcome to my Go Wordle! \nWhat you want to do? \n 1- Play a game \n 2- Read instructions \n 3- Exit \n")
+		fmt.Printf("Welcome to my Go Wordle! \n\nWhat you want to do? \n\n 1- Play a game \n 2- Read instructions \n 3- Match history \n 4- Exit \n")
 		scanner.Scan()
 		input := scanner.Text()
 		inputInt, err := strconv.Atoi(input)
@@ -23,11 +23,13 @@ func main() {
 		case 2:
 			instructions()
 		case 3:
+			showMatchHistory()
+		case 4:
 			fmt.Println("Bye bye!")
 		default:
 			fmt.Println("Try again")
 		}
-		if inputInt == 3 {
+		if inputInt == 4 {
 			break
 		}
 
@@ -77,6 +79,7 @@ func playGame() {
 	wordToGuess, err := getWord()
 	check(err)
 	var tries = [6]string{"", "", "", "", "", ""}
+	correct := true
 	for i := 0; i < 6; i++ {
 		fmt.Println("Guess the word:")
 		scanner.Scan()
@@ -87,7 +90,6 @@ func playGame() {
 
 			yellow := color.New(color.FgYellow)
 			green := color.New(color.FgGreen)
-			correct := true
 
 			for j := 0; j < 5; j++ {
 				switch compareResult[j] {
@@ -103,8 +105,10 @@ func playGame() {
 			}
 			if correct {
 				fmt.Println("Congratulations, you won!")
+				fmt.Print("\n\n\n")
 				break
 			}
+			fmt.Print("\n\n")
 			for k := 0; k < 6; k++ {
 				if len(tries[k]) > 0 {
 					fmt.Println(tries[k])
@@ -115,16 +119,26 @@ func playGame() {
 			if i == 5 {
 				fmt.Printf("You've lost, the word was %v\n", wordToGuess)
 			} else {
-				fmt.Printf("You have %v tries left\n", 5-i)
+				fmt.Printf("\nYou have %v tries left\n\n", 5-i)
 			}
 		} else {
 			fmt.Println(err.Error())
-			i++
+			i--
 		}
 
 	}
+	err = insertMatchResult(wordToGuess, tries[:], correct)
+	check(err)
 }
 
 func instructions() {
 	fmt.Println("Wordle is a popular word puzzle game where the objective is to guess a hidden five-letter word within six attempts.")
+}
+
+func showMatchHistory() {
+	matchHistory, err := getMatchHistory()
+	check(err)
+	for _, match := range matchHistory {
+		fmt.Printf("Partida: %d \n", match.id)
+	}
 }
